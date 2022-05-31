@@ -32,6 +32,7 @@ func NewAuthenticator(config *configuration.Config) *Authenticator {
 type ID struct {
 	Email string
 	Token string
+	Username string
 }
 
 // Request Validation
@@ -101,10 +102,11 @@ func (a *Authenticator) useAuthDomain(r *http.Request) (bool, string) {
 // Cookie methods
 
 // MakeIDCookie creates an auth cookie
-func (a *Authenticator) MakeIDCookie(r *http.Request, email string, token string) (*http.Cookie, error) {
+func (a *Authenticator) MakeIDCookie(r *http.Request, email string, username string, token string) (*http.Cookie, error) {
 	expires := a.config.CookieExpiry()
 	data := &ID{
 		Email: email,
+		Username: username,
 		Token: token,
 	}
 
