@@ -211,6 +211,9 @@ func (s *Server) AuthHandler(rule string) http.HandlerFunc {
 		for _, headerName := range s.config.EmailHeaderNames {
 			w.Header().Set(headerName, id.Email)
 		}
+		for _, headerName := range s.config.UserHeaderNames {
+			w.Header().Set(headerName, id.Username)
+		}
 
 		if s.config.EnableImpersonation {
 			// Set impersonation headers
@@ -331,15 +334,16 @@ func (s *Server) AuthCallbackHandler() http.HandlerFunc {
 			return
 		}
 
-		email, ok := claims["email"]
-		if ok {
+		email, ok_email := claims["email"]
+		user, ok_user := claims["preferred_username"]
+		if ok_email && ok_user {
 			token := ""
 			if s.config.ForwardTokenHeaderName != "" {
 				token = rawIDToken
 			}
 
 			// Generate cookies
-			c, err := s.authenticator.MakeIDCookie(r, email.(string), token)
+			c, err := s.authenticator.MakeIDCookie(r, email.(string), user.(string), token)
 			if err != nil {
 				logger.Errorf("error generating secure session cookie: %v", err)
 				http.Error(w, "Bad Gateway", 502)
